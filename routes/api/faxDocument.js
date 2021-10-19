@@ -16,6 +16,7 @@ router.post('/:fax_number', async (req, res) => {
                 fax_number
             });
         } else {
+            let file = req.files.file;
 
             console.log('Fax POST', {
                 fax_number,
@@ -24,6 +25,10 @@ router.post('/:fax_number', async (req, res) => {
                 }
             })
 
+            // Move file to uploads folder
+            await file.mv('./uploads/' + file.name);
+
+            // Send response
             res.status(200).send({
                 message: 'Fax initiated.',
                 fax_number
