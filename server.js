@@ -2,6 +2,7 @@ const express = require('express');
 const fileUpload = require('express-fileupload');
 const app = express();
 const routes = require('./routes');
+require("dotenv").config();
 
 // Middleware - Upload files
 app.use(fileUpload({

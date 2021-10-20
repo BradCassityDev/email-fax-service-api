@@ -1,8 +1,9 @@
 const router = require('express').Router();
+const { sendFaxEmail } = require('../../controllers/email');
 
-// /api/v1/fax/:fax_number
-router.post('/:fax_number', async (req, res) => {
-    const { fax_number } = req.params;
+// /api/v1/fax/:faxNumber
+router.post('/:faxNumber', async (req, res) => {
+    const { faxNumber } = req.params;
 
     // Validate provided fax number
     //
@@ -13,26 +14,38 @@ router.post('/:fax_number', async (req, res) => {
         if(!req.files) {
             res.status(404).send({
                 message: 'No file provided.',
-                fax_number
+                faxNumber
             });
         } else {
-            let file = req.files.file;
+            let postedFile = req.files.file;
 
             console.log('Fax POST', {
-                fax_number,
-                file: {
-                    ...req.files
-                }
-            })
+                faxNumber,
+                postedFile
+            });
 
             // Move file to uploads folder
-            await file.mv('./uploads/' + file.name);
+            await postedFile.mv(`./uploads/${postedFile.name}`, async function(err) {
+                // Check if we got an error and return
+                if(err) {
+                    res.status(500).send(err);
+                    return;
+                }
 
-            // Send response
-            res.status(200).send({
-                message: 'Fax initiated.',
-                fax_number
+                // Attempt sending fax as email
+                const result = await sendFaxEmail(faxNumber, postedFile, 'Test subject', 'The message');
+
+                // Verify we did not get an error
+                    
+                // Send response
+                res.status(200).send({
+                    message: 'Fax initiated.',
+                    faxNumber
+                });
+
             });
+
+            
         }
     } catch (err) {
         res.status(500).send(err);
